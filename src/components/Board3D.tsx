@@ -42,7 +42,7 @@ const Cell: React.FC<CellProps> = ({ position, value, onClick, isWinning }) => {
         onClick={onClick}
       >
         <meshStandardMaterial
-          color={hovered ? '#e0e0e0' : '#d0d0d0'}
+          color={hovered ? '#404040' : '#303030'}
           metalness={0.1}
           roughness={0.8}
           transparent={true}

@@ -1,11 +1,11 @@
 .game-info {
-  background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
+  background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
   border-radius: 20px;
   padding: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  color: #333;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  color: #e0e0e0;
   min-width: 320px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .status-section {
@@ -55,7 +55,7 @@
   font-size: 20px;
   font-weight: 600;
   margin-bottom: 15px;
-  color: #666;
+  color: #999;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -68,18 +68,18 @@
 
 .score-item {
   flex: 1;
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 15px;
   padding: 20px;
   text-align: center;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
 }
 
 .score-item:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.08);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .player-label {
@@ -110,15 +110,15 @@
 }
 
 .game-history {
-  background: rgba(0, 0, 0, 0.03);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 15px;
   padding: 15px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .no-history {
   text-align: center;
-  color: #666;
+  color: #999;
   font-style: italic;
   margin: 10px 0;
 }
@@ -133,17 +133,17 @@
 }
 
 .history-item:hover {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .history-number {
   font-size: 14px;
-  color: #666;
+  color: #999;
   font-weight: 600;
 }
 
 .history-result {
   font-size: 16px;
   font-weight: 600;
-  color: #666;
+  color: #999;
 }
