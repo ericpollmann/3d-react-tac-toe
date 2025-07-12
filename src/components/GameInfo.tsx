@@ -1,5 +1,5 @@
-import React from 'react';
-import { Player, GameScore } from '../types/game';
+import React, { useState } from 'react';
+import { Player, GameScore, GameHistoryItem } from '../types/game';
 import './GameInfo.css';
 
 interface GameInfoProps {
@@ -7,7 +7,7 @@ interface GameInfoProps {
   winner: Player | null;
   isDraw: boolean;
   score: GameScore;
-  gameHistory: Array<{ winner: Player | 'draw' | null; timestamp: Date }>;
+  gameHistory: GameHistoryItem[];
   onNewGame: () => void;
 }
 
@@ -19,6 +19,8 @@ const GameInfo: React.FC<GameInfoProps> = ({
   gameHistory,
   onNewGame,
 }) => {
+  const [activeTab, setActiveTab] = useState<'recent' | 'records'>('recent');
+
   const getGameStatus = () => {
     if (winner) {
       return `Player ${winner} wins!`;
@@ -30,6 +32,18 @@ const GameInfo: React.FC<GameInfoProps> = ({
   };
 
   const last5Games = gameHistory.slice(-5).reverse();
+
+  // Get wins only (no draws) for move records
+  const wins = gameHistory.filter(game => game.winner !== 'draw' && game.winner !== null);
+  
+  // Find least and most move wins
+  const leastMoveWin = wins.length > 0 
+    ? wins.reduce((min, game) => game.moveCount < min.moveCount ? game : min)
+    : null;
+    
+  const mostMoveWin = wins.length > 0
+    ? wins.reduce((max, game) => game.moveCount > max.moveCount ? game : max)
+    : null;
 
   return (
     <div className="game-info">
@@ -61,19 +75,62 @@ const GameInfo: React.FC<GameInfoProps> = ({
       </div>
 
       <div className="history-section">
-        <h3>Last 5 Games</h3>
+        <div className="history-tabs">
+          <button 
+            className={`tab-button ${activeTab === 'recent' ? 'active' : ''}`}
+            onClick={() => setActiveTab('recent')}
+          >
+            Last 5 Games
+          </button>
+          <button 
+            className={`tab-button ${activeTab === 'records' ? 'active' : ''}`}
+            onClick={() => setActiveTab('records')}
+          >
+            Move Records
+          </button>
+        </div>
+        
         <div className="game-history">
-          {last5Games.length === 0 ? (
-            <p className="no-history">No games played yet</p>
+          {activeTab === 'recent' ? (
+            last5Games.length === 0 ? (
+              <p className="no-history">No games played yet</p>
+            ) : (
+              last5Games.map((game, index) => (
+                <div key={index} className="history-item">
+                  <span className="history-number">#{gameHistory.length - gameHistory.indexOf(game)}</span>
+                  <span className="history-result">
+                    {game.winner === 'draw' ? 'Draw' : `${game.winner} won`}
+                  </span>
+                  <span className="history-moves">{game.moveCount} moves</span>
+                </div>
+              ))
+            )
           ) : (
-            last5Games.map((game, index) => (
-              <div key={index} className="history-item">
-                <span className="history-number">#{gameHistory.length - index}</span>
-                <span className="history-result">
-                  {game.winner === 'draw' ? 'Draw' : `${game.winner} won`}
-                </span>
+            <div className="move-records">
+              <div className="record-item">
+                <span className="record-label">Fewest Moves Win:</span>
+                {leastMoveWin ? (
+                  <span className="record-value">
+                    {leastMoveWin.winner} - {leastMoveWin.moveCount} moves
+                  </span>
+                ) : (
+                  <span className="record-empty">No wins yet</span>
+                )}
               </div>
-            ))
+              <div className="record-item">
+                <span className="record-label">Most Moves Win:</span>
+                {mostMoveWin ? (
+                  <span className="record-value">
+                    {mostMoveWin.winner} - {mostMoveWin.moveCount} moves
+                  </span>
+                ) : (
+                  <span className="record-empty">No wins yet</span>
+                )}
+              </div>
+              <div className="record-note">
+                <p>Note: Draws are theoretically possible in 3D Tic-Tac-Toe but extremely rare due to the many winning lines available.</p>
+              </div>
+            </div>
           )}
         </div>
       </div>

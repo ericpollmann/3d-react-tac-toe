@@ -147,3 +147,89 @@
   font-weight: 600;
   color: #666;
 }
+
+/* Tab styles */
+.history-tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 15px;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 10px 15px;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.tab-button.active {
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  color: white;
+  border-color: transparent;
+  font-weight: 600;
+}
+
+/* Move count and records styles */
+.history-moves {
+  font-size: 14px;
+  color: #999;
+  font-weight: 500;
+}
+
+.move-records {
+  padding: 10px 0;
+}
+
+.record-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.record-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+}
+
+.record-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #4ECDC4;
+}
+
+.record-empty {
+  font-size: 14px;
+  color: #999;
+  font-style: italic;
+}
+
+.record-note {
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(78, 205, 196, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(78, 205, 196, 0.2);
+}
+
+.record-note p {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+}
