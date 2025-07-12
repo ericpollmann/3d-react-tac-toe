@@ -76,3 +76,5 @@
 
 > deploy it all
 
+> go fix api gateway, debug until it works fully and don't stop with a partial solution!
+
