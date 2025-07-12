@@ -154,7 +154,7 @@ function App() {
           />
         </div>
       </div>
-      <PositionKey board={gameState.board} />
+      <PositionKey board={gameState.board} winningLine={gameState.winningLine} />
     </div>
   );
 }

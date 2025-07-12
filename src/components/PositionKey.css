@@ -111,11 +111,38 @@
 }
 
 .o-piece {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 18px;
   border: 3px solid #4ECDC4;
   border-radius: 50%;
   box-sizing: border-box;
+}
+
+/* Winning animations */
+.position-cell.winning {
+  background: #fff3cd;
+  border-color: #ffd700;
+}
+
+.winning-piece {
+  animation: spin 2s linear infinite;
+}
+
+.winning-piece.x-piece .x-line {
+  background-color: #FFD700;
+}
+
+.winning-piece.o-piece {
+  border-color: #FFD700;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {

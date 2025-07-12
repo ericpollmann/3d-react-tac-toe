@@ -102,6 +102,7 @@ const Cell: React.FC<CellProps> = ({ position, value, isWinning }) => {
           args={[0.5, 0.15, 16, 32]}
           position={[0, 0.5, 0]}
           rotation={[Math.PI / 2, 0, 0]}
+          scale={[0.8, 1, 1.2]}
         >
           <meshStandardMaterial color={isWinning ? '#FFD700' : '#4ECDC4'} emissive={isWinning ? '#FFD700' : '#4ECDC4'} emissiveIntensity={0.3} />
         </Torus>
