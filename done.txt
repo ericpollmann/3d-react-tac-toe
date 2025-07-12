@@ -62,3 +62,15 @@
 
 > Hm, but that's not really globally shared now is it, keep going until you find a free solution that works.
 
+> maybe uninstall firebase if not using it
+
+> You could use aws serices, see creds in the env
+
+> how about memorydb for example
+
+> how were the keys / secrets stored in github
+
+> Can you use github secrets from gh-pages or should the app also be hosted from aws?
+
+> I don't want to use cognito (esp not on end-user account basis) - so try option 2 unless cognito is only one user for the entire global app here
+

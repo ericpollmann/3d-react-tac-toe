@@ -127,30 +127,45 @@ The game includes a truly global scoreboard feature that allows players worldwid
 
 ### Backend Storage
 
-The global scoreboard uses **AWS DynamoDB** for reliable, scalable storage:
+The global scoreboard uses **AWS Lambda + DynamoDB** for secure, serverless storage:
 
-- **Automatic table creation**: The app creates the DynamoDB table if it doesn't exist
-- **TTL support**: Game records automatically expire after 30 days to manage storage costs
-- **Fallback support**: If AWS is not configured, the app falls back to localStorage
-- **Free tier friendly**: Uses on-demand billing to stay within AWS free tier limits
+- **Serverless API**: AWS Lambda functions handle all database operations
+- **No credentials in frontend**: Secure architecture with no AWS keys exposed
+- **Automatic scaling**: Lambda and DynamoDB scale automatically with usage
+- **TTL support**: Game records automatically expire after 30 days
+- **Fallback support**: If API is not configured, gracefully falls back to localStorage
+- **Free tier friendly**: Optimized to stay within AWS free tier limits
 
-### Setup for Your Own AWS Instance
+### Setup for Global Scoreboard
 
-To use your own AWS DynamoDB instance:
+To enable the truly global scoreboard:
 
-1. Set up AWS credentials in your environment:
+1. **Deploy the Lambda API** (requires AWS CLI):
    ```bash
-   export AWS_ACCESS_KEY_ID=your-access-key
-   export AWS_SECRET_ACCESS_KEY=your-secret-key
-   export AWS_REGION=us-east-1
+   cd lambda
+   ./deploy.sh
    ```
 
-2. The app will automatically:
-   - Create a DynamoDB table named `3d-tic-tac-toe-games`
-   - Set up TTL for automatic cleanup
-   - Handle all game record storage and retrieval
+2. **Configure the frontend** with your API endpoint:
+   ```bash
+   # For local development
+   echo "REACT_APP_API_URL=https://your-api-url/prod" >> .env.local
+   
+   # For production, set in your build environment
+   export REACT_APP_API_URL=https://your-api-url/prod
+   ```
 
-If AWS credentials are not provided, the game gracefully falls back to localStorage while maintaining the same user experience.
+3. **Redeploy your frontend** with the API URL configured
+
+The Lambda deployment script automatically:
+- Creates the DynamoDB table with TTL
+- Sets up API Gateway with CORS
+- Configures IAM roles with least privilege
+- Provides you with the API endpoint URL
+
+See `lambda/README.md` for detailed deployment instructions.
+
+**Without API configuration**: The game works perfectly with localStorage and demo data, maintaining the same user experience.
 
 ## Contributing
 
