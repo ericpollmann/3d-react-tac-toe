@@ -52,3 +52,7 @@
 
 > instead make the move records and last 5 games be globally shared
 
+> The gh-pages version is out of date, update it
+
+> When I type my name into the name entry popup at start it makes moves on each letter press.  Preventdefault when in the name entry.
+

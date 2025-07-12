@@ -112,8 +112,8 @@ function App() {
     };
 
     const handleKeyPress = (event: KeyboardEvent) => {
-      // Ignore if game is over or if a modifier key is pressed
-      if (gameState.winner || gameState.isDraw || event.ctrlKey || event.metaKey || event.altKey) {
+      // Ignore if game is over, if a modifier key is pressed, or if name prompt is showing
+      if (gameState.winner || gameState.isDraw || event.ctrlKey || event.metaKey || event.altKey || showNamePrompt) {
         return;
       }
 
@@ -130,7 +130,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [gameState, handleCellClick]);
+  }, [gameState, handleCellClick, showNamePrompt]);
 
   const handleNewGame = () => {
     setGameState(initializeGameState());
