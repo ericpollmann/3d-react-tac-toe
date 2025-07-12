@@ -3,6 +3,7 @@ import './App.css';
 import Board3D from './components/Board3D';
 import GameInfo from './components/GameInfo';
 import PositionKey from './components/PositionKey';
+import GlobalScoreboard from './components/GlobalScoreboard';
 import { GameState, GameScore, Position, GameHistoryItem } from './types/game';
 import { initializeGameState, makeMove } from './utils/gameLogic';
 
@@ -10,6 +11,7 @@ function App() {
   const [gameState, setGameState] = useState<GameState>(initializeGameState());
   const [score, setScore] = useState<GameScore>({ X: 0, O: 0, draws: 0 });
   const [gameHistory, setGameHistory] = useState<GameHistoryItem[]>([]);
+  const [showDrawNote, setShowDrawNote] = useState(true);
 
   useEffect(() => {
     const savedScore = localStorage.getItem('ticTacToeScore');
@@ -120,6 +122,12 @@ function App() {
 
   return (
     <div className="App">
+      {showDrawNote && (
+        <div className="draw-note">
+          <p>Note: Draws are theoretically possible in 3D Tic-Tac-Toe but extremely rare due to the many winning lines available.</p>
+          <button className="close-note" onClick={() => setShowDrawNote(false)}>×</button>
+        </div>
+      )}
       <header className="App-header">
         <h1>3D Tic-Tac-Toe</h1>
         <div className="header-score">

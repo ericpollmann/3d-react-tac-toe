@@ -127,9 +127,6 @@ const GameInfo: React.FC<GameInfoProps> = ({
                   <span className="record-empty">No wins yet</span>
                 )}
               </div>
-              <div className="record-note">
-                <p>Note: Draws are theoretically possible in 3D Tic-Tac-Toe but extremely rare due to the many winning lines available.</p>
-              </div>
             </div>
           )}
         </div>

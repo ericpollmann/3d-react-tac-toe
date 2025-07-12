@@ -30,3 +30,21 @@
 
 > For it to be clear that the player 'O' is spinning in the graph key on the bottom left, could you slightly make the 'O' a little more oval
 
+> Good, except I would like the O piece to be verically an oval, rather than horizontally an oval.
+
+> Could you also make it so all of the O pieces are that same oval shape including on the 3d board
+
+> make this game public so anyone in the world can play it
+
+> In the top score area make 'last 5 games' be a tab, where you an also switch to a 'fastest 5 games' tab
+
+> undo that fastest 5 change
+
+> instead keep track of least move wins and most move wins.  By the way is it possible to have a draw in 3d tic tac toe.  Also, persist the score between reloading the page, 
+  and make everyone worldwide share a top games scoreboard.  Commit and push each change along the way as you go.
+
+> could you put the note that  Draws are theoretically possible in 3D Tic-Tac-Toe but extremely rare due to the many winning lines available. not in the tab of 'moves' but in
+   the general top left corner of the page and add an x that, if pressed, closes the note. take this step by step
+
+> commit and push and continue the global shared scoreboard, particularly for the github version of the app
+

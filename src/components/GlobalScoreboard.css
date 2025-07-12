@@ -1,0 +1,162 @@
+.global-scoreboard {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f8f8 100%);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.global-scoreboard h3 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  color: #333;
+  text-align: center;
+}
+
+.submit-section {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 12px 20px;
+  background: linear-gradient(45deg, #FF6B6B, #4ECDC4);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.name-input-group {
+  display: flex;
+  gap: 10px;
+}
+
+.name-input-group input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.name-input-group button {
+  padding: 10px 20px;
+  background: #4ECDC4;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.name-input-group button:hover:not(:disabled) {
+  background: #3eb8af;
+}
+
+.name-input-group button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submitted-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: rgba(78, 205, 196, 0.1);
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.change-name-btn {
+  padding: 5px 15px;
+  background: transparent;
+  border: 1px solid #4ECDC4;
+  color: #4ECDC4;
+  border-radius: 5px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.change-name-btn:hover {
+  background: #4ECDC4;
+  color: white;
+}
+
+.scores-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.score-entry {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.score-entry:hover {
+  background: rgba(0, 0, 0, 0.05);
+  transform: translateX(5px);
+}
+
+.score-entry.current-player {
+  background: rgba(78, 205, 196, 0.15);
+  border: 1px solid rgba(78, 205, 196, 0.3);
+}
+
+.rank {
+  font-size: 14px;
+  font-weight: 700;
+  color: #FF6B6B;
+  width: 35px;
+}
+
+.player-name {
+  flex: 1;
+  font-weight: 600;
+  color: #333;
+}
+
+.wins {
+  font-size: 14px;
+  color: #666;
+  margin-right: 10px;
+}
+
+.record {
+  font-size: 12px;
+  padding: 2px 8px;
+  background: rgba(255, 215, 0, 0.2);
+  border-radius: 12px;
+  color: #d4a000;
+  font-weight: 600;
+}
+
+.loading, .no-scores, .error-message {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  padding: 20px;
+}
+
+.error-message {
+  color: #FF6B6B;
+}
