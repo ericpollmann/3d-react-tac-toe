@@ -74,3 +74,5 @@
 
 > I don't want to use cognito (esp not on end-user account basis) - so try option 2 unless cognito is only one user for the entire global app here
 
+> deploy it all
+
