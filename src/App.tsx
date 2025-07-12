@@ -5,7 +5,7 @@ import GameInfo from './components/GameInfo';
 import PositionKey from './components/PositionKey';
 import { GameState, GameScore, Position, GameHistoryItem } from './types/game';
 import { initializeGameState, makeMove } from './utils/gameLogic';
-import { submitGameRecord } from './lib/supabase';
+import { submitGameRecord } from './lib/github-storage';
 
 function App() {
   const [gameState, setGameState] = useState<GameState>(initializeGameState());
@@ -14,6 +14,7 @@ function App() {
   const [showDrawNote, setShowDrawNote] = useState(true);
   const [playerName, setPlayerName] = useState<string>('');
   const [showNamePrompt, setShowNamePrompt] = useState(false);
+  const [hasShownNamePrompt, setHasShownNamePrompt] = useState(false);
 
   useEffect(() => {
     const savedScore = localStorage.getItem('ticTacToeScore');
@@ -34,10 +35,17 @@ function App() {
 
     if (savedName) {
       setPlayerName(savedName);
+      setHasShownNamePrompt(true);
     } else {
-      setShowNamePrompt(true);
+      // Show name prompt after a short delay to let the game load
+      setTimeout(() => {
+        if (!hasShownNamePrompt) {
+          setShowNamePrompt(true);
+          setHasShownNamePrompt(true);
+        }
+      }, 500);
     }
-  }, []);
+  }, [hasShownNamePrompt]);
 
   useEffect(() => {
     localStorage.setItem('ticTacToeScore', JSON.stringify(score));
@@ -69,11 +77,21 @@ function App() {
       ]);
 
       // Submit to global scoreboard
+      console.log('Submitting game record:', {
+        playerName: playerName || 'Anonymous',
+        winner: gameResult,
+        moveCount: newGameState.moveCount
+      });
+      
       submitGameRecord(
         playerName || 'Anonymous',
         gameResult as 'X' | 'O' | 'draw',
         newGameState.moveCount
-      );
+      ).then(result => {
+        console.log('submitGameRecord result:', result);
+      }).catch(error => {
+        console.error('submitGameRecord error:', error);
+      });
     }
   };
 

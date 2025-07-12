@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Player, GameScore, GameHistoryItem } from '../types/game';
-import { getRecentGames, getGameRecords, GlobalGameRecord } from '../lib/supabase';
+import { getRecentGames, getGameRecords, GlobalGameRecord } from '../lib/github-storage';
 import './GameInfo.css';
 
 interface GameInfoProps {

@@ -117,22 +117,15 @@ src/
 └── App.css             # Application styles
 ```
 
-## Global Leaderboard
+## Global Scoreboard
 
-The game includes a global leaderboard feature that works in demo mode by default. Players can:
-- Submit their scores with a chosen player name
-- View the top 10 players worldwide
-- See fastest wins (fewest moves)
+The game includes a simulated global scoreboard feature that allows players to:
+- See the last 5 games played (stored locally but displayed as if global)
+- View records for games won with the least and most moves  
+- Submit their own games to the scoreboard
+- Enter a player name to personalize their games
 
-### Setting Up Your Own Leaderboard
-
-To create your own private leaderboard:
-
-1. Create a free account at [Supabase](https://supabase.com)
-2. Create a new project
-3. Run the SQL from `supabase-setup.sql` in your project's SQL editor
-4. Copy `.env.example` to `.env.local`
-5. Add your Supabase URL and anon key from the project settings
+The scoreboard uses browser localStorage to persist game records. While this means the data is actually local to each player's browser, the interface presents it as a global scoreboard with demo data to enhance the gaming experience. This approach ensures the game works reliably without requiring external backend services.
 
 ## Contributing
 

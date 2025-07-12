@@ -1,0 +1,145 @@
+// JSONBin API configuration
+const JSONBIN_API_KEY = '$2a$10$4.1bGoIylw3YRtYaFPXLOePhvUXNWihHNW8IOBPE8XJoVXXHQqGgS';
+const BIN_ID = '678549e6ad19ca34f8ecce0b';
+const BASE_URL = 'https://api.jsonbin.io/v3';
+
+export interface GlobalGameRecord {
+  id?: string;
+  player_name: string;
+  winner: 'X' | 'O' | 'draw';
+  move_count: number;
+  created_at: string;
+}
+
+export interface GameData {
+  games: GlobalGameRecord[];
+  lastUpdated: string;
+}
+
+// Initialize empty data structure
+const emptyData: GameData = {
+  games: [],
+  lastUpdated: new Date().toISOString()
+};
+
+// Fetch game data from JSONBin
+async function fetchGameData(): Promise<GameData> {
+  try {
+    const response = await fetch(`${BASE_URL}/b/${BIN_ID}/latest`, {
+      headers: {
+        'X-Access-Key': JSONBIN_API_KEY
+      }
+    });
+    
+    if (!response.ok) {
+      console.error('Error fetching data:', response.statusText);
+      return emptyData;
+    }
+    
+    const result = await response.json();
+    return result.record || emptyData;
+  } catch (error) {
+    console.error('Error fetching game data:', error);
+    return emptyData;
+  }
+}
+
+// Save game data to JSONBin
+async function saveGameData(data: GameData): Promise<boolean> {
+  try {
+    const response = await fetch(`${BASE_URL}/b/${BIN_ID}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Access-Key': JSONBIN_API_KEY
+      },
+      body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) {
+      console.error('Error saving data:', response.statusText);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error saving game data:', error);
+    return false;
+  }
+}
+
+// Submit a game record
+export async function submitGameRecord(
+  playerName: string,
+  winner: 'X' | 'O' | 'draw',
+  moveCount: number
+): Promise<boolean> {
+  try {
+    const data = await fetchGameData();
+    
+    // Add new game record
+    const newRecord: GlobalGameRecord = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      player_name: playerName,
+      winner,
+      move_count: moveCount,
+      created_at: new Date().toISOString()
+    };
+    
+    data.games.push(newRecord);
+    data.lastUpdated = new Date().toISOString();
+    
+    // Keep only last 100 games to avoid hitting size limits
+    if (data.games.length > 100) {
+      data.games = data.games.slice(-100);
+    }
+    
+    return await saveGameData(data);
+  } catch (error) {
+    console.error('Error submitting game record:', error);
+    return false;
+  }
+}
+
+// Get recent games
+export async function getRecentGames(limit: number = 5): Promise<GlobalGameRecord[]> {
+  try {
+    const data = await fetchGameData();
+    
+    // Sort by created_at descending and take the limit
+    return data.games
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, limit);
+  } catch (error) {
+    console.error('Error getting recent games:', error);
+    return [];
+  }
+}
+
+// Get game records (least/most moves)
+export async function getGameRecords(): Promise<{
+  leastMoves: GlobalGameRecord | null;
+  mostMoves: GlobalGameRecord | null;
+}> {
+  try {
+    const data = await fetchGameData();
+    
+    // Filter out draws
+    const wins = data.games.filter(game => game.winner !== 'draw');
+    
+    if (wins.length === 0) {
+      return { leastMoves: null, mostMoves: null };
+    }
+    
+    // Sort by move count
+    wins.sort((a, b) => a.move_count - b.move_count);
+    
+    return {
+      leastMoves: wins[0],
+      mostMoves: wins[wins.length - 1]
+    };
+  } catch (error) {
+    console.error('Error getting game records:', error);
+    return { leastMoves: null, mostMoves: null };
+  }
+}

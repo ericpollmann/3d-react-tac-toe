@@ -1,14 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Get Supabase configuration from environment variables or use demo instance
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://dddqnobepfdtmsefqscb.supabase.co';
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkZHFub2JlcGZkdG1zZWZxc2NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY1NDEzNDYsImV4cCI6MjA1MjExNzM0Nn0.8Y_AehKbE0dVpGIMS7CP8ogWrTcMlFR0vwJC0HKDsAY';
+// Get Supabase configuration from environment variables
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || '';
 
-// Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Check if Supabase is configured
+export const isSupabaseConfigured = !!(supabaseUrl && supabaseAnonKey);
+
+// Create Supabase client only if configured
+export const supabase = isSupabaseConfigured 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null as any;
 
 // Check if using demo instance
-export const isDemoMode = supabaseUrl.includes('dddqnobepfdtmsefqscb');
+export const isDemoMode = false;
 
 export interface GlobalScore {
   id?: string;
@@ -30,6 +35,10 @@ export interface GlobalGameRecord {
 
 // Initialize the scores table if it doesn't exist
 export async function initializeDatabase() {
+  if (!isSupabaseConfigured) {
+    return false;
+  }
+  
   try {
     // Try to fetch from table to check if it exists
     const { error } = await supabase
@@ -174,20 +183,25 @@ export async function submitGameRecord(
   winner: 'X' | 'O' | 'draw',
   moveCount: number
 ) {
+  console.log('submitGameRecord called with:', { playerName, winner, moveCount });
+  
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('game_records')
       .insert({
         player_name: playerName,
         winner,
         move_count: moveCount
-      });
+      })
+      .select();
     
     if (error) {
       console.error('Error submitting game record:', error);
+      console.error('Error details:', error.message, error.details, error.hint);
       return false;
     }
     
+    console.log('Game record submitted successfully:', data);
     return true;
   } catch (err) {
     console.error('Error submitting game record:', err);

@@ -56,3 +56,5 @@
 
 > When I type my name into the name entry popup at start it makes moves on each letter press.  Preventdefault when in the name entry.
 
+> push that to gh-pages too
+
