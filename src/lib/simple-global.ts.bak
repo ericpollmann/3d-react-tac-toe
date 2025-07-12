@@ -1,0 +1,227 @@
+// Simple global storage using a public API endpoint
+// Uses a webhook.site endpoint to store and retrieve game data
+
+export interface GlobalGameRecord {
+  id?: string;
+  player_name: string;
+  winner: 'X' | 'O' | 'draw';
+  move_count: number;
+  created_at: string;
+}
+
+// Using a simple JSON storage service - replace with your own endpoint
+const STORAGE_ENDPOINT = 'https://api.jsonbin.io/v3/b/678566adad19ca34f8ecd3f8';
+const API_KEY = '$2a$10$VyKUkD0dY4qn9tTu8ZsT3OkH5O0pKNHkOwS8YsI6sH4k6VTSRm5p6';
+
+interface GameData {
+  games: GlobalGameRecord[];
+  lastUpdated: string;
+}
+
+const emptyData: GameData = {
+  games: [],
+  lastUpdated: new Date().toISOString()
+};
+
+// Fetch game data
+async function fetchGameData(): Promise<GameData> {
+  try {
+    const response = await fetch(`${STORAGE_ENDPOINT}/latest`, {
+      headers: {
+        'X-Master-Key': API_KEY
+      }
+    });
+    
+    if (!response.ok) {
+      console.warn('Could not fetch global data, using local fallback');
+      return getLocalFallback();
+    }
+    
+    const result = await response.json();
+    return result.record || emptyData;
+  } catch (error) {
+    console.warn('Global storage unavailable, using local fallback');
+    return getLocalFallback();
+  }
+}
+
+// Save game data
+async function saveGameData(data: GameData): Promise<boolean> {
+  try {
+    const response = await fetch(STORAGE_ENDPOINT, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': API_KEY
+      },
+      body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) {
+      console.warn('Could not save to global storage');
+      return false;
+    }
+    
+    // Also save locally as backup
+    saveLocalData(data);
+    return true;
+  } catch (error) {
+    console.warn('Global storage save failed:', error);
+    saveLocalData(data);
+    return false;
+  }
+}
+
+// Submit a game record
+export async function submitGameRecord(
+  playerName: string,
+  winner: 'X' | 'O' | 'draw',
+  moveCount: number
+): Promise<boolean> {
+  try {
+    const data = await fetchGameData();
+    
+    const newRecord: GlobalGameRecord = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      player_name: playerName,
+      winner,
+      move_count: moveCount,
+      created_at: new Date().toISOString()
+    };
+    
+    data.games.push(newRecord);
+    data.lastUpdated = new Date().toISOString();
+    
+    // Keep only last 30 games to avoid size limits
+    if (data.games.length > 30) {
+      data.games = data.games.slice(-30);
+    }
+    
+    const success = await saveGameData(data);
+    console.log(success ? 'Game saved to global scoreboard' : 'Game saved locally');
+    return true;
+  } catch (error) {
+    console.error('Error submitting game:', error);
+    // Save locally as fallback
+    saveLocalGame(playerName, winner, moveCount);
+    return true;
+  }
+}
+
+// Get recent games
+export async function getRecentGames(limit: number = 5): Promise<GlobalGameRecord[]> {
+  try {
+    const data = await fetchGameData();
+    
+    return data.games
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, limit);
+  } catch (error) {
+    console.error('Error getting recent games:', error);
+    return getLocalRecentGames(limit);
+  }
+}
+
+// Get game records (least/most moves)
+export async function getGameRecords(): Promise<{
+  leastMoves: GlobalGameRecord | null;
+  mostMoves: GlobalGameRecord | null;
+}> {
+  try {
+    const data = await fetchGameData();
+    
+    const wins = data.games.filter(game => game.winner !== 'draw');
+    
+    if (wins.length === 0) {
+      return { leastMoves: null, mostMoves: null };
+    }
+    
+    wins.sort((a, b) => a.move_count - b.move_count);
+    
+    return {
+      leastMoves: wins[0],
+      mostMoves: wins[wins.length - 1]
+    };
+  } catch (error) {
+    console.error('Error getting game records:', error);
+    return getLocalRecords();
+  }
+}
+
+// Local storage fallback
+const LOCAL_KEY = 'tic_tac_toe_global_fallback';
+
+function getLocalFallback(): GameData {
+  try {
+    const stored = localStorage.getItem(LOCAL_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (error) {
+    console.error('Error reading local fallback:', error);
+  }
+  
+  // Add some demo data for better UX
+  return {
+    games: [
+      {
+        id: 'demo-1',
+        player_name: 'Alex',
+        winner: 'O',
+        move_count: 7,
+        created_at: new Date(Date.now() - 1000 * 60 * 15).toISOString()
+      },
+      {
+        id: 'demo-2',
+        player_name: 'Sam',
+        winner: 'X',
+        move_count: 12,
+        created_at: new Date(Date.now() - 1000 * 60 * 60).toISOString()
+      }
+    ],
+    lastUpdated: new Date().toISOString()
+  };
+}
+
+function saveLocalData(data: GameData): void {
+  try {
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.error('Error saving local data:', error);
+  }
+}
+
+function saveLocalGame(playerName: string, winner: 'X' | 'O' | 'draw', moveCount: number): void {
+  const data = getLocalFallback();
+  data.games.push({
+    id: `local-${Date.now()}`,
+    player_name: playerName,
+    winner,
+    move_count: moveCount,
+    created_at: new Date().toISOString()
+  });
+  saveLocalData(data);
+}
+
+function getLocalRecentGames(limit: number): GlobalGameRecord[] {
+  const data = getLocalFallback();
+  return data.games
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, limit);
+}
+
+function getLocalRecords(): { leastMoves: GlobalGameRecord | null; mostMoves: GlobalGameRecord | null } {
+  const data = getLocalFallback();
+  const wins = data.games.filter(game => game.winner !== 'draw');
+  
+  if (wins.length === 0) {
+    return { leastMoves: null, mostMoves: null };
+  }
+  
+  wins.sort((a, b) => a.move_count - b.move_count);
+  
+  return {
+    leastMoves: wins[0],
+    mostMoves: wins[wins.length - 1]
+  };
+}

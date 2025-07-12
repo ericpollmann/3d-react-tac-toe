@@ -1,0 +1,184 @@
+// JsonStorage.net - Free JSON storage service
+// Using a dedicated storage for the 3D Tic-Tac-Toe game
+
+const STORAGE_ID = '1b9d71a8f5d24c3ba8e55e1f9c2a4b7e'; // Unique ID for our game
+const API_BASE = 'https://json-storage.com/api/items';
+
+export interface GlobalGameRecord {
+  id?: string;
+  player_name: string;
+  winner: 'X' | 'O' | 'draw';
+  move_count: number;
+  created_at: string;
+}
+
+export interface GameData {
+  games: GlobalGameRecord[];
+  lastUpdated: string;
+}
+
+// Initial data structure
+const emptyData: GameData = {
+  games: [],
+  lastUpdated: new Date().toISOString()
+};
+
+// Fetch game data
+async function fetchGameData(): Promise<GameData> {
+  try {
+    const response = await fetch(`${API_BASE}/${STORAGE_ID}`);
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        // First time - initialize storage
+        await initializeStorage();
+        return emptyData;
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return data || emptyData;
+  } catch (error) {
+    console.error('Error fetching game data:', error);
+    // Fallback to localStorage
+    return getLocalData();
+  }
+}
+
+// Save game data
+async function saveGameData(data: GameData): Promise<boolean> {
+  try {
+    const response = await fetch(`${API_BASE}/${STORAGE_ID}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    // Also save to localStorage as backup
+    saveLocalData(data);
+    return true;
+  } catch (error) {
+    console.error('Error saving game data:', error);
+    // Fallback to localStorage
+    saveLocalData(data);
+    return false;
+  }
+}
+
+// Initialize storage with empty data
+async function initializeStorage(): Promise<void> {
+  try {
+    await fetch(`${API_BASE}/${STORAGE_ID}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(emptyData)
+    });
+  } catch (error) {
+    console.error('Error initializing storage:', error);
+  }
+}
+
+// Submit a game record
+export async function submitGameRecord(
+  playerName: string,
+  winner: 'X' | 'O' | 'draw',
+  moveCount: number
+): Promise<boolean> {
+  try {
+    const data = await fetchGameData();
+    
+    // Add new game record
+    const newRecord: GlobalGameRecord = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      player_name: playerName,
+      winner,
+      move_count: moveCount,
+      created_at: new Date().toISOString()
+    };
+    
+    data.games.push(newRecord);
+    data.lastUpdated = new Date().toISOString();
+    
+    // Keep only last 50 games to avoid hitting size limits
+    if (data.games.length > 50) {
+      data.games = data.games.slice(-50);
+    }
+    
+    return await saveGameData(data);
+  } catch (error) {
+    console.error('Error submitting game record:', error);
+    return false;
+  }
+}
+
+// Get recent games
+export async function getRecentGames(limit: number = 5): Promise<GlobalGameRecord[]> {
+  try {
+    const data = await fetchGameData();
+    
+    // Sort by created_at descending and take the limit
+    return data.games
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .slice(0, limit);
+  } catch (error) {
+    console.error('Error getting recent games:', error);
+    return [];
+  }
+}
+
+// Get game records (least/most moves)
+export async function getGameRecords(): Promise<{
+  leastMoves: GlobalGameRecord | null;
+  mostMoves: GlobalGameRecord | null;
+}> {
+  try {
+    const data = await fetchGameData();
+    
+    // Filter out draws
+    const wins = data.games.filter(game => game.winner !== 'draw');
+    
+    if (wins.length === 0) {
+      return { leastMoves: null, mostMoves: null };
+    }
+    
+    // Sort by move count
+    wins.sort((a, b) => a.move_count - b.move_count);
+    
+    return {
+      leastMoves: wins[0],
+      mostMoves: wins[wins.length - 1]
+    };
+  } catch (error) {
+    console.error('Error getting game records:', error);
+    return { leastMoves: null, mostMoves: null };
+  }
+}
+
+// Local storage fallback
+const LOCAL_STORAGE_KEY = '3d_tic_tac_toe_global_backup';
+
+function getLocalData(): GameData {
+  try {
+    const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return data ? JSON.parse(data) : emptyData;
+  } catch {
+    return emptyData;
+  }
+}
+
+function saveLocalData(data: GameData): void {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+  }
+}

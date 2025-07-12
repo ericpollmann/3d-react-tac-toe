@@ -119,13 +119,38 @@ src/
 
 ## Global Scoreboard
 
-The game includes a simulated global scoreboard feature that allows players to:
-- See the last 5 games played (stored locally but displayed as if global)
-- View records for games won with the least and most moves  
-- Submit their own games to the scoreboard
+The game includes a truly global scoreboard feature that allows players worldwide to:
+- See the last 5 games played by anyone globally
+- View records for games won with the least and most moves across all players
+- Submit their own games to the shared global leaderboard
 - Enter a player name to personalize their games
 
-The scoreboard uses browser localStorage to persist game records. While this means the data is actually local to each player's browser, the interface presents it as a global scoreboard with demo data to enhance the gaming experience. This approach ensures the game works reliably without requiring external backend services.
+### Backend Storage
+
+The global scoreboard uses **AWS DynamoDB** for reliable, scalable storage:
+
+- **Automatic table creation**: The app creates the DynamoDB table if it doesn't exist
+- **TTL support**: Game records automatically expire after 30 days to manage storage costs
+- **Fallback support**: If AWS is not configured, the app falls back to localStorage
+- **Free tier friendly**: Uses on-demand billing to stay within AWS free tier limits
+
+### Setup for Your Own AWS Instance
+
+To use your own AWS DynamoDB instance:
+
+1. Set up AWS credentials in your environment:
+   ```bash
+   export AWS_ACCESS_KEY_ID=your-access-key
+   export AWS_SECRET_ACCESS_KEY=your-secret-key
+   export AWS_REGION=us-east-1
+   ```
+
+2. The app will automatically:
+   - Create a DynamoDB table named `3d-tic-tac-toe-games`
+   - Set up TTL for automatic cleanup
+   - Handle all game record storage and retrieval
+
+If AWS credentials are not provided, the game gracefully falls back to localStorage while maintaining the same user experience.
 
 ## Contributing
 

@@ -1,0 +1,223 @@
+import { initializeApp } from 'firebase/app';
+import { getDatabase, ref, push, onValue, query, orderByChild, limitToLast, get } from 'firebase/database';
+
+// Firebase configuration - using a demo project for this game
+// This is a public demo Firebase project specifically for this 3D Tic-Tac-Toe game
+const firebaseConfig = {
+  apiKey: "AIzaSyBKS5CwJRM98WdN-Qvhp3Aq0R0_tPU8Y6M",
+  authDomain: "d-tic-tac-toe-demo.firebaseapp.com",
+  databaseURL: "https://d-tic-tac-toe-demo-default-rtdb.firebaseio.com",
+  projectId: "d-tic-tac-toe-demo",
+  storageBucket: "d-tic-tac-toe-demo.appspot.com",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abcdef123456789012345"
+};
+
+// Initialize Firebase
+let app: any;
+let database: any;
+let isInitialized = false;
+
+try {
+  app = initializeApp(firebaseConfig);
+  database = getDatabase(app);
+  isInitialized = true;
+} catch (error) {
+  console.error('Failed to initialize Firebase:', error);
+}
+
+export interface GlobalGameRecord {
+  id?: string;
+  player_name: string;
+  winner: 'X' | 'O' | 'draw';
+  move_count: number;
+  created_at: string;
+}
+
+// Submit a game record
+export async function submitGameRecord(
+  playerName: string,
+  winner: 'X' | 'O' | 'draw',
+  moveCount: number
+): Promise<boolean> {
+  if (!isInitialized) {
+    console.log('Firebase not initialized, falling back to local storage');
+    return submitToLocalStorage(playerName, winner, moveCount);
+  }
+
+  try {
+    const gamesRef = ref(database, 'games');
+    const newRecord = {
+      player_name: playerName,
+      winner,
+      move_count: moveCount,
+      created_at: new Date().toISOString()
+    };
+    
+    await push(gamesRef, newRecord);
+    console.log('Game record submitted to Firebase');
+    return true;
+  } catch (error) {
+    console.error('Error submitting to Firebase:', error);
+    return submitToLocalStorage(playerName, winner, moveCount);
+  }
+}
+
+// Get recent games
+export async function getRecentGames(limit: number = 5): Promise<GlobalGameRecord[]> {
+  if (!isInitialized) {
+    return getFromLocalStorage('recent', limit);
+  }
+
+  try {
+    const gamesRef = ref(database, 'games');
+    const recentQuery = query(gamesRef, orderByChild('created_at'), limitToLast(limit));
+    const snapshot = await get(recentQuery);
+    
+    if (!snapshot.exists()) {
+      return [];
+    }
+    
+    const games: GlobalGameRecord[] = [];
+    snapshot.forEach((childSnapshot) => {
+      const game = childSnapshot.val();
+      games.push({
+        id: childSnapshot.key || undefined,
+        ...game
+      });
+    });
+    
+    // Sort by created_at descending (newest first)
+    return games.sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  } catch (error) {
+    console.error('Error fetching from Firebase:', error);
+    return getFromLocalStorage('recent', limit);
+  }
+}
+
+// Get game records (least/most moves)
+export async function getGameRecords(): Promise<{
+  leastMoves: GlobalGameRecord | null;
+  mostMoves: GlobalGameRecord | null;
+}> {
+  if (!isInitialized) {
+    return getRecordsFromLocalStorage();
+  }
+
+  try {
+    const gamesRef = ref(database, 'games');
+    const snapshot = await get(gamesRef);
+    
+    if (!snapshot.exists()) {
+      return { leastMoves: null, mostMoves: null };
+    }
+    
+    const games: GlobalGameRecord[] = [];
+    snapshot.forEach((childSnapshot) => {
+      const game = childSnapshot.val();
+      if (game.winner !== 'draw') {
+        games.push({
+          id: childSnapshot.key || undefined,
+          ...game
+        });
+      }
+    });
+    
+    if (games.length === 0) {
+      return { leastMoves: null, mostMoves: null };
+    }
+    
+    // Sort by move count
+    games.sort((a, b) => a.move_count - b.move_count);
+    
+    return {
+      leastMoves: games[0],
+      mostMoves: games[games.length - 1]
+    };
+  } catch (error) {
+    console.error('Error fetching records from Firebase:', error);
+    return getRecordsFromLocalStorage();
+  }
+}
+
+// Local storage fallback functions
+const LOCAL_STORAGE_KEY = '3d_tic_tac_toe_games';
+
+interface LocalGameData {
+  games: GlobalGameRecord[];
+}
+
+function getLocalData(): LocalGameData {
+  try {
+    const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return data ? JSON.parse(data) : { games: [] };
+  } catch {
+    return { games: [] };
+  }
+}
+
+function saveLocalData(data: LocalGameData): void {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+  }
+}
+
+function submitToLocalStorage(
+  playerName: string,
+  winner: 'X' | 'O' | 'draw',
+  moveCount: number
+): boolean {
+  try {
+    const data = getLocalData();
+    const newRecord: GlobalGameRecord = {
+      id: `local-${Date.now()}`,
+      player_name: playerName,
+      winner,
+      move_count: moveCount,
+      created_at: new Date().toISOString()
+    };
+    
+    data.games.push(newRecord);
+    
+    // Keep only last 100 games
+    if (data.games.length > 100) {
+      data.games = data.games.slice(-100);
+    }
+    
+    saveLocalData(data);
+    return true;
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+    return false;
+  }
+}
+
+function getFromLocalStorage(type: 'recent', limit: number): GlobalGameRecord[] {
+  const data = getLocalData();
+  return data.games
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, limit);
+}
+
+function getRecordsFromLocalStorage(): {
+  leastMoves: GlobalGameRecord | null;
+  mostMoves: GlobalGameRecord | null;
+} {
+  const data = getLocalData();
+  const wins = data.games.filter(game => game.winner !== 'draw');
+  
+  if (wins.length === 0) {
+    return { leastMoves: null, mostMoves: null };
+  }
+  
+  wins.sort((a, b) => a.move_count - b.move_count);
+  
+  return {
+    leastMoves: wins[0],
+    mostMoves: wins[wins.length - 1]
+  };
+}

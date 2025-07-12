@@ -5,7 +5,7 @@ import GameInfo from './components/GameInfo';
 import PositionKey from './components/PositionKey';
 import { GameState, GameScore, Position, GameHistoryItem } from './types/game';
 import { initializeGameState, makeMove } from './utils/gameLogic';
-import { submitGameRecord } from './lib/github-storage';
+import { submitGameRecord } from './lib/aws-storage';
 
 function App() {
   const [gameState, setGameState] = useState<GameState>(initializeGameState());

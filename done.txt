@@ -58,3 +58,7 @@
 
 > push that to gh-pages too
 
+> can you use another free service besides supabase then if it's not reliably around for long periods of time?
+
+> Hm, but that's not really globally shared now is it, keep going until you find a free solution that works.
+

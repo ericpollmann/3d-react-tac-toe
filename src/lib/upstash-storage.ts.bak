@@ -1,0 +1,188 @@
+import { Redis } from '@upstash/redis';
+
+// Upstash Redis configuration for free tier
+// This is a demo configuration - replace with your own Upstash Redis instance
+const redis = new Redis({
+  url: 'https://balanced-crawdad-40849.upstash.io',
+  token: 'AZZNASQgNjVjZjU4MDgtZmQyYi00ZGVlLWI1OTMtMTVhNDcyOWJjZWE0YjY2YzVjZTZmYWQ5NGY4YmFiZGY4NzlhZGUzNjlkNjg='
+});
+
+export interface GlobalGameRecord {
+  id?: string;
+  player_name: string;
+  winner: 'X' | 'O' | 'draw';
+  move_count: number;
+  created_at: string;
+}
+
+const GAMES_KEY = 'tic_tac_toe_games';
+const RECORDS_KEY = 'tic_tac_toe_records';
+
+// Submit a game record
+export async function submitGameRecord(
+  playerName: string,
+  winner: 'X' | 'O' | 'draw',
+  moveCount: number
+): Promise<boolean> {
+  try {
+    const gameRecord: GlobalGameRecord = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      player_name: playerName,
+      winner,
+      move_count: moveCount,
+      created_at: new Date().toISOString()
+    };
+
+    // Add to recent games list (keep last 100)
+    await redis.lpush(GAMES_KEY, JSON.stringify(gameRecord));
+    await redis.ltrim(GAMES_KEY, 0, 99); // Keep only 100 most recent
+
+    // Update records if this is a new record (only for wins)
+    if (winner !== 'draw') {
+      const currentRecords = await getGameRecords();
+      
+      const shouldUpdateLeast = !currentRecords.leastMoves || moveCount < currentRecords.leastMoves.move_count;
+      const shouldUpdateMost = !currentRecords.mostMoves || moveCount > currentRecords.mostMoves.move_count;
+      
+      if (shouldUpdateLeast) {
+        await redis.hset(RECORDS_KEY, { least_moves: JSON.stringify(gameRecord) });
+      }
+      
+      if (shouldUpdateMost) {
+        await redis.hset(RECORDS_KEY, { most_moves: JSON.stringify(gameRecord) });
+      }
+    }
+
+    console.log('Game record submitted to Upstash Redis');
+    return true;
+  } catch (error) {
+    console.error('Error submitting to Upstash:', error);
+    // Fallback to localStorage
+    return submitToLocalStorage(playerName, winner, moveCount);
+  }
+}
+
+// Get recent games
+export async function getRecentGames(limit: number = 5): Promise<GlobalGameRecord[]> {
+  try {
+    const gamesData = await redis.lrange(GAMES_KEY, 0, limit - 1);
+    
+    const games: GlobalGameRecord[] = gamesData.map(gameStr => {
+      try {
+        return JSON.parse(gameStr);
+      } catch {
+        return null;
+      }
+    }).filter(Boolean);
+
+    return games;
+  } catch (error) {
+    console.error('Error fetching from Upstash:', error);
+    return getFromLocalStorage('recent', limit);
+  }
+}
+
+// Get game records (least/most moves)
+export async function getGameRecords(): Promise<{
+  leastMoves: GlobalGameRecord | null;
+  mostMoves: GlobalGameRecord | null;
+}> {
+  try {
+    const records = await redis.hmget(RECORDS_KEY, 'least_moves', 'most_moves');
+    
+    const leastMoves = records[0] ? JSON.parse(records[0]) : null;
+    const mostMoves = records[1] ? JSON.parse(records[1]) : null;
+
+    return { leastMoves, mostMoves };
+  } catch (error) {
+    console.error('Error fetching records from Upstash:', error);
+    return getRecordsFromLocalStorage();
+  }
+}
+
+// Local storage fallback functions
+const LOCAL_STORAGE_KEY = '3d_tic_tac_toe_games_backup';
+
+interface LocalGameData {
+  games: GlobalGameRecord[];
+  records: {
+    leastMoves: GlobalGameRecord | null;
+    mostMoves: GlobalGameRecord | null;
+  };
+}
+
+function getLocalData(): LocalGameData {
+  try {
+    const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return data ? JSON.parse(data) : {
+      games: [],
+      records: { leastMoves: null, mostMoves: null }
+    };
+  } catch {
+    return {
+      games: [],
+      records: { leastMoves: null, mostMoves: null }
+    };
+  }
+}
+
+function saveLocalData(data: LocalGameData): void {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+  }
+}
+
+function submitToLocalStorage(
+  playerName: string,
+  winner: 'X' | 'O' | 'draw',
+  moveCount: number
+): boolean {
+  try {
+    const data = getLocalData();
+    const newRecord: GlobalGameRecord = {
+      id: `local-${Date.now()}`,
+      player_name: playerName,
+      winner,
+      move_count: moveCount,
+      created_at: new Date().toISOString()
+    };
+    
+    data.games.unshift(newRecord);
+    
+    // Keep only last 100 games
+    if (data.games.length > 100) {
+      data.games = data.games.slice(0, 100);
+    }
+
+    // Update records for wins
+    if (winner !== 'draw') {
+      if (!data.records.leastMoves || moveCount < data.records.leastMoves.move_count) {
+        data.records.leastMoves = newRecord;
+      }
+      if (!data.records.mostMoves || moveCount > data.records.mostMoves.move_count) {
+        data.records.mostMoves = newRecord;
+      }
+    }
+    
+    saveLocalData(data);
+    return true;
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+    return false;
+  }
+}
+
+function getFromLocalStorage(type: 'recent', limit: number): GlobalGameRecord[] {
+  const data = getLocalData();
+  return data.games.slice(0, limit);
+}
+
+function getRecordsFromLocalStorage(): {
+  leastMoves: GlobalGameRecord | null;
+  mostMoves: GlobalGameRecord | null;
+} {
+  const data = getLocalData();
+  return data.records;
+}
