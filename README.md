@@ -2,6 +2,8 @@
 
 A three-dimensional twist on the classic Tic-Tac-Toe game built with React, TypeScript, and Three.js.
 
+🎮 **[Play the game live here!](https://ericpollmann.github.io/3d-react-tac-toe/)**
+
 ## Features
 
 - **3D Game Board**: Play on a 3x3x3 cube with 27 positions
