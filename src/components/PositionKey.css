@@ -1,0 +1,142 @@
+.position-key {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  padding: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
+
+.position-key h3 {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.layer-key {
+  margin-bottom: 10px;
+}
+
+.layer-key:last-child {
+  margin-bottom: 0;
+}
+
+.layer-name {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.position-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  width: 90px;
+}
+
+.position-cell {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.position-cell:hover {
+  background: #e8e8e8;
+  transform: scale(1.1);
+}
+
+.position-cell.occupied {
+  background: #d8d8d8;
+  font-weight: 700;
+  color: #333;
+}
+
+.position-cell.occupied:hover {
+  transform: none;
+}
+
+.key-subtitle {
+  font-size: 11px;
+  color: #999;
+  margin-bottom: 10px;
+  font-style: italic;
+}
+
+/* Highlight special positions */
+.position-grid .position-cell:nth-child(5) {
+  background: #e8f4f8;
+  border-color: #b8d4e0;
+  font-weight: 700;
+}
+
+/* Graphical pieces */
+.x-piece {
+  position: relative;
+  width: 16px;
+  height: 16px;
+}
+
+.x-line {
+  position: absolute;
+  width: 20px;
+  height: 3px;
+  background-color: #FF6B6B;
+  left: 50%;
+  top: 50%;
+  transform-origin: center;
+}
+
+.x-line-1 {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.x-line-2 {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.o-piece {
+  width: 16px;
+  height: 16px;
+  border: 3px solid #4ECDC4;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .position-key {
+    bottom: 10px;
+    left: 10px;
+    padding: 10px;
+  }
+  
+  .position-key h3 {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  
+  .position-grid {
+    width: 75px;
+  }
+  
+  .position-cell {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+  }
+}

@@ -1,24 +1,21 @@
 import React, { useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Box, Sphere, Torus, Plane } from '@react-three/drei';
+import { OrbitControls, Box, Sphere, Torus, Plane, Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { CellValue, Position } from '../types/game';
 
 interface Board3DProps {
   board: CellValue[][][];
-  onCellClick: (position: Position) => void;
   winningLine: Position[] | null;
 }
 
 interface CellProps {
   position: Position;
   value: CellValue;
-  onClick: () => void;
   isWinning: boolean;
 }
 
-const Cell: React.FC<CellProps> = ({ position, value, onClick, isWinning }) => {
-  const [hovered, setHovered] = useState(false);
+const Cell: React.FC<CellProps> = ({ position, value, isWinning }) => {
   const meshRef = useRef<THREE.Mesh>(null);
 
   useFrame((state) => {
@@ -29,20 +26,36 @@ const Cell: React.FC<CellProps> = ({ position, value, onClick, isWinning }) => {
 
   const { layer, row, col } = position;
   const x = (col - 1) * 2.2;
-  const y = (layer - 1) * 2.2;
+  const y = (2 - layer) * 2.2;  // Reversed: layer 0 at top, layer 2 at bottom
   const z = (row - 1) * 2.2;
+
+  // Calculate position label
+  const getPositionLabel = () => {
+    // Center position (layer 1, row 1, col 1)
+    if (layer === 1 && row === 1 && col === 1) return '0';
+    
+    // Map positions to letters
+    const labels = [
+      // Top layer (0)
+      ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'],
+      // Middle layer (1)
+      ['j', 'k', 'l', 'm', '0', 'n', 'o', 'p', 'q'],
+      // Bottom layer (2)
+      ['r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+    ];
+    
+    const index = row * 3 + col;
+    return labels[layer][index];
+  };
 
   return (
     <group position={[x, y, z]}>
       <Plane
         args={[2, 2]}
         rotation={[-Math.PI / 2, 0, 0]}
-        onPointerOver={() => setHovered(true)}
-        onPointerOut={() => setHovered(false)}
-        onClick={onClick}
       >
         <meshStandardMaterial
-          color={hovered ? '#404040' : '#303030'}
+          color="#d0d0d0"
           metalness={0.1}
           roughness={0.8}
           transparent={true}
@@ -50,6 +63,27 @@ const Cell: React.FC<CellProps> = ({ position, value, onClick, isWinning }) => {
           side={THREE.DoubleSide}
         />
       </Plane>
+      
+      {/* Position label */}
+      {value === null && (
+        <group position={[0, 0.01, 0]}>
+          {/* Background circle for better visibility */}
+          <mesh rotation={[-Math.PI / 2, 0, 0]}>
+            <circleGeometry args={[0.3, 32]} />
+            <meshBasicMaterial color="#f0f0f0" opacity={0.9} transparent />
+          </mesh>
+          <Text
+            position={[0, 0.01, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+            fontSize={0.35}
+            color="#666666"
+            anchorX="center"
+            anchorY="middle"
+          >
+            {getPositionLabel()}
+          </Text>
+        </group>
+      )}
       
       {value === 'X' && (
         <group ref={meshRef} position={[0, 0.3, 0]}>
@@ -76,7 +110,7 @@ const Cell: React.FC<CellProps> = ({ position, value, onClick, isWinning }) => {
   );
 };
 
-const Board: React.FC<Board3DProps> = ({ board, onCellClick, winningLine }) => {
+const Board: React.FC<Board3DProps> = ({ board, winningLine }) => {
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame((state) => {
@@ -106,7 +140,6 @@ const Board: React.FC<Board3DProps> = ({ board, onCellClick, winningLine }) => {
                 key={`${layerIndex}-${rowIndex}-${colIndex}`}
                 position={position}
                 value={cell}
-                onClick={() => onCellClick(position)}
                 isWinning={isWinningCell(position)}
               />
             );
@@ -117,14 +150,14 @@ const Board: React.FC<Board3DProps> = ({ board, onCellClick, winningLine }) => {
   );
 };
 
-const Board3D: React.FC<Board3DProps> = ({ board, onCellClick, winningLine }) => {
+const Board3D: React.FC<Board3DProps> = ({ board, winningLine }) => {
   return (
     <div style={{ width: '100%', height: '600px' }}>
       <Canvas camera={{ position: [8, 8, 8], fov: 50 }}>
         <ambientLight intensity={0.5} />
         <pointLight position={[10, 10, 10]} intensity={1} />
         <pointLight position={[-10, -10, -10]} intensity={0.5} />
-        <Board board={board} onCellClick={onCellClick} winningLine={winningLine} />
+        <Board board={board} winningLine={winningLine} />
         <OrbitControls
           enablePan={false}
           minDistance={5}

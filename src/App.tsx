@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Board3D from './components/Board3D';
 import GameInfo from './components/GameInfo';
+import PositionKey from './components/PositionKey';
 import { GameState, GameScore, Position } from './types/game';
 import { initializeGameState, makeMove } from './utils/gameLogic';
 
@@ -58,6 +59,61 @@ function App() {
     }
   };
 
+  useEffect(() => {
+    const keyToPosition: { [key: string]: Position } = {
+      // Top layer
+      'a': { layer: 0, row: 0, col: 0 },
+      'b': { layer: 0, row: 0, col: 1 },
+      'c': { layer: 0, row: 0, col: 2 },
+      'd': { layer: 0, row: 1, col: 0 },
+      'e': { layer: 0, row: 1, col: 1 },
+      'f': { layer: 0, row: 1, col: 2 },
+      'g': { layer: 0, row: 2, col: 0 },
+      'h': { layer: 0, row: 2, col: 1 },
+      'i': { layer: 0, row: 2, col: 2 },
+      // Middle layer
+      'j': { layer: 1, row: 0, col: 0 },
+      'k': { layer: 1, row: 0, col: 1 },
+      'l': { layer: 1, row: 0, col: 2 },
+      'm': { layer: 1, row: 1, col: 0 },
+      '0': { layer: 1, row: 1, col: 1 },
+      'n': { layer: 1, row: 1, col: 2 },
+      'o': { layer: 1, row: 2, col: 0 },
+      'p': { layer: 1, row: 2, col: 1 },
+      'q': { layer: 1, row: 2, col: 2 },
+      // Bottom layer
+      'r': { layer: 2, row: 0, col: 0 },
+      's': { layer: 2, row: 0, col: 1 },
+      't': { layer: 2, row: 0, col: 2 },
+      'u': { layer: 2, row: 1, col: 0 },
+      'v': { layer: 2, row: 1, col: 1 },
+      'w': { layer: 2, row: 1, col: 2 },
+      'x': { layer: 2, row: 2, col: 0 },
+      'y': { layer: 2, row: 2, col: 1 },
+      'z': { layer: 2, row: 2, col: 2 }
+    };
+
+    const handleKeyPress = (event: KeyboardEvent) => {
+      // Ignore if game is over or if a modifier key is pressed
+      if (gameState.winner || gameState.isDraw || event.ctrlKey || event.metaKey || event.altKey) {
+        return;
+      }
+
+      const key = event.key.toLowerCase();
+      const position = keyToPosition[key];
+
+      if (position) {
+        // Check if the cell is empty before placing
+        if (gameState.board[position.layer][position.row][position.col] === null) {
+          handleCellClick(position);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [gameState, handleCellClick]);
+
   const handleNewGame = () => {
     setGameState(initializeGameState());
   };
@@ -84,7 +140,6 @@ function App() {
         <div className="board-container">
           <Board3D
             board={gameState.board}
-            onCellClick={handleCellClick}
             winningLine={gameState.winningLine}
           />
         </div>
@@ -99,6 +154,7 @@ function App() {
           />
         </div>
       </div>
+      <PositionKey board={gameState.board} />
     </div>
   );
 }
