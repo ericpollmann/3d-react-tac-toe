@@ -20,6 +20,14 @@ export interface GlobalScore {
   updated_at?: string;
 }
 
+export interface GlobalGameRecord {
+  id?: string;
+  player_name: string;
+  winner: 'X' | 'O' | 'draw';
+  move_count: number;
+  created_at?: string;
+}
+
 // Initialize the scores table if it doesn't exist
 export async function initializeDatabase() {
   try {
@@ -106,6 +114,83 @@ export async function submitScore(playerName: string, wins: number, leastMoves: 
     return true;
   } catch (err) {
     console.error('Error submitting score:', err);
+    return false;
+  }
+}
+
+// Get recent games from all players
+export async function getRecentGames(limit: number = 5) {
+  try {
+    const { data, error } = await supabase
+      .from('game_records')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    
+    if (error) {
+      console.error('Error fetching recent games:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (err) {
+    console.error('Error fetching recent games:', err);
+    return [];
+  }
+}
+
+// Get games with least/most moves (wins only)
+export async function getGameRecords() {
+  try {
+    const { data, error } = await supabase
+      .from('game_records')
+      .select('*')
+      .neq('winner', 'draw')
+      .order('move_count', { ascending: true });
+    
+    if (error) {
+      console.error('Error fetching game records:', error);
+      return { leastMoves: null, mostMoves: null };
+    }
+    
+    if (!data || data.length === 0) {
+      return { leastMoves: null, mostMoves: null };
+    }
+    
+    // First item has least moves, last item has most moves
+    return {
+      leastMoves: data[0],
+      mostMoves: data[data.length - 1]
+    };
+  } catch (err) {
+    console.error('Error fetching game records:', err);
+    return { leastMoves: null, mostMoves: null };
+  }
+}
+
+// Submit a game record
+export async function submitGameRecord(
+  playerName: string,
+  winner: 'X' | 'O' | 'draw',
+  moveCount: number
+) {
+  try {
+    const { error } = await supabase
+      .from('game_records')
+      .insert({
+        player_name: playerName,
+        winner,
+        move_count: moveCount
+      });
+    
+    if (error) {
+      console.error('Error submitting game record:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (err) {
+    console.error('Error submitting game record:', err);
     return false;
   }
 }

@@ -48,3 +48,7 @@
 
 > commit and push and continue the global shared scoreboard, particularly for the github version of the app
 
+> remove the side global leaderboard
+
+> instead make the move records and last 5 games be globally shared
+

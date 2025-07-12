@@ -3,19 +3,22 @@ import './App.css';
 import Board3D from './components/Board3D';
 import GameInfo from './components/GameInfo';
 import PositionKey from './components/PositionKey';
-import GlobalScoreboard from './components/GlobalScoreboard';
 import { GameState, GameScore, Position, GameHistoryItem } from './types/game';
 import { initializeGameState, makeMove } from './utils/gameLogic';
+import { submitGameRecord } from './lib/supabase';
 
 function App() {
   const [gameState, setGameState] = useState<GameState>(initializeGameState());
   const [score, setScore] = useState<GameScore>({ X: 0, O: 0, draws: 0 });
   const [gameHistory, setGameHistory] = useState<GameHistoryItem[]>([]);
   const [showDrawNote, setShowDrawNote] = useState(true);
+  const [playerName, setPlayerName] = useState<string>('');
+  const [showNamePrompt, setShowNamePrompt] = useState(false);
 
   useEffect(() => {
     const savedScore = localStorage.getItem('ticTacToeScore');
     const savedHistory = localStorage.getItem('ticTacToeHistory');
+    const savedName = localStorage.getItem('playerName');
     
     if (savedScore) {
       setScore(JSON.parse(savedScore));
@@ -27,6 +30,12 @@ function App() {
         ...game,
         timestamp: new Date(game.timestamp)
       })));
+    }
+
+    if (savedName) {
+      setPlayerName(savedName);
+    } else {
+      setShowNamePrompt(true);
     }
   }, []);
 
@@ -58,6 +67,13 @@ function App() {
         ...prevHistory,
         { winner: gameResult, timestamp: new Date(), moveCount: newGameState.moveCount }
       ]);
+
+      // Submit to global scoreboard
+      submitGameRecord(
+        playerName || 'Anonymous',
+        gameResult as 'X' | 'O' | 'draw',
+        newGameState.moveCount
+      );
     }
   };
 
@@ -120,8 +136,38 @@ function App() {
     setGameState(initializeGameState());
   };
 
+  const handleSetPlayerName = (name: string) => {
+    const trimmedName = name.trim();
+    if (trimmedName) {
+      setPlayerName(trimmedName);
+      localStorage.setItem('playerName', trimmedName);
+      setShowNamePrompt(false);
+    }
+  };
+
   return (
     <div className="App">
+      {showNamePrompt && (
+        <div className="name-prompt-overlay">
+          <div className="name-prompt">
+            <h2>Welcome to 3D Tic-Tac-Toe!</h2>
+            <p>Enter your name for the global leaderboard:</p>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const input = e.currentTarget.querySelector('input');
+              if (input) handleSetPlayerName(input.value);
+            }}>
+              <input
+                type="text"
+                placeholder="Your name"
+                maxLength={20}
+                autoFocus
+              />
+              <button type="submit">Start Playing</button>
+            </form>
+          </div>
+        </div>
+      )}
       {showDrawNote && (
         <div className="draw-note">
           <p>Note: Draws are theoretically possible in 3D Tic-Tac-Toe but extremely rare due to the many winning lines available.</p>
@@ -159,20 +205,6 @@ function App() {
             score={score}
             gameHistory={gameHistory}
             onNewGame={handleNewGame}
-          />
-          {/* Calculate player stats for global scoreboard */}
-          <GlobalScoreboard
-            localWins={score.O}
-            leastMovesWin={
-              gameHistory
-                .filter(g => g.winner === 'O')
-                .reduce((min, g) => (!min || g.moveCount < min) ? g.moveCount : min, null as number | null)
-            }
-            mostMovesWin={
-              gameHistory
-                .filter(g => g.winner === 'O')
-                .reduce((max, g) => (!max || g.moveCount > max) ? g.moveCount : max, null as number | null)
-            }
           />
         </div>
       </div>

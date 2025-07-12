@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Player, GameScore, GameHistoryItem } from '../types/game';
+import { getRecentGames, getGameRecords, GlobalGameRecord } from '../lib/supabase';
 import './GameInfo.css';
 
 interface GameInfoProps {
@@ -20,6 +21,35 @@ const GameInfo: React.FC<GameInfoProps> = ({
   onNewGame,
 }) => {
   const [activeTab, setActiveTab] = useState<'recent' | 'records'>('recent');
+  const [globalRecentGames, setGlobalRecentGames] = useState<GlobalGameRecord[]>([]);
+  const [globalRecords, setGlobalRecords] = useState<{
+    leastMoves: GlobalGameRecord | null;
+    mostMoves: GlobalGameRecord | null;
+  }>({ leastMoves: null, mostMoves: null });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadGlobalData();
+    // Refresh every 30 seconds
+    const interval = setInterval(loadGlobalData, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadGlobalData = async () => {
+    setLoading(true);
+    try {
+      const [recentGames, records] = await Promise.all([
+        getRecentGames(),
+        getGameRecords()
+      ]);
+      setGlobalRecentGames(recentGames);
+      setGlobalRecords(records);
+    } catch (error) {
+      console.error('Error loading global data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getGameStatus = () => {
     if (winner) {
@@ -31,19 +61,18 @@ const GameInfo: React.FC<GameInfoProps> = ({
     return `Current player: ${currentPlayer}`;
   };
 
-  const last5Games = gameHistory.slice(-5).reverse();
-
-  // Get wins only (no draws) for move records
-  const wins = gameHistory.filter(game => game.winner !== 'draw' && game.winner !== null);
-  
-  // Find least and most move wins
-  const leastMoveWin = wins.length > 0 
-    ? wins.reduce((min, game) => game.moveCount < min.moveCount ? game : min)
-    : null;
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
     
-  const mostMoveWin = wins.length > 0
-    ? wins.reduce((max, game) => game.moveCount > max.moveCount ? game : max)
-    : null;
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffMins < 1440) return `${Math.floor(diffMins / 60)}h ago`;
+    return `${Math.floor(diffMins / 1440)}d ago`;
+  };
 
   return (
     <div className="game-info">
@@ -57,7 +86,7 @@ const GameInfo: React.FC<GameInfoProps> = ({
       </div>
 
       <div className="score-section">
-        <h3>Score</h3>
+        <h3>Your Score</h3>
         <div className="score-board">
           <div className="score-item">
             <span className="player-label player-x">Player X</span>
@@ -80,53 +109,62 @@ const GameInfo: React.FC<GameInfoProps> = ({
             className={`tab-button ${activeTab === 'recent' ? 'active' : ''}`}
             onClick={() => setActiveTab('recent')}
           >
-            Last 5 Games
+            🌍 Last 5 Games
           </button>
           <button 
             className={`tab-button ${activeTab === 'records' ? 'active' : ''}`}
             onClick={() => setActiveTab('records')}
           >
-            Move Records
+            🏆 Move Records
           </button>
         </div>
         
         <div className="game-history">
           {activeTab === 'recent' ? (
-            last5Games.length === 0 ? (
-              <p className="no-history">No games played yet</p>
+            loading ? (
+              <p className="loading">Loading global games...</p>
+            ) : globalRecentGames.length === 0 ? (
+              <p className="no-history">No global games yet</p>
             ) : (
-              last5Games.map((game, index) => (
-                <div key={index} className="history-item">
-                  <span className="history-number">#{gameHistory.length - gameHistory.indexOf(game)}</span>
+              globalRecentGames.map((game, index) => (
+                <div key={game.id || index} className="history-item global-game">
+                  <span className="player-name">{game.player_name}</span>
                   <span className="history-result">
                     {game.winner === 'draw' ? 'Draw' : `${game.winner} won`}
                   </span>
-                  <span className="history-moves">{game.moveCount} moves</span>
+                  <span className="history-moves">{game.move_count} moves</span>
+                  <span className="history-time">{formatDate(game.created_at)}</span>
                 </div>
               ))
             )
           ) : (
             <div className="move-records">
-              <div className="record-item">
-                <span className="record-label">Fewest Moves Win:</span>
-                {leastMoveWin ? (
-                  <span className="record-value">
-                    {leastMoveWin.winner} - {leastMoveWin.moveCount} moves
-                  </span>
-                ) : (
-                  <span className="record-empty">No wins yet</span>
-                )}
-              </div>
-              <div className="record-item">
-                <span className="record-label">Most Moves Win:</span>
-                {mostMoveWin ? (
-                  <span className="record-value">
-                    {mostMoveWin.winner} - {mostMoveWin.moveCount} moves
-                  </span>
-                ) : (
-                  <span className="record-empty">No wins yet</span>
-                )}
-              </div>
+              {loading ? (
+                <p className="loading">Loading records...</p>
+              ) : (
+                <>
+                  <div className="record-item">
+                    <span className="record-label">🚀 Fewest Moves Win:</span>
+                    {globalRecords.leastMoves ? (
+                      <span className="record-value">
+                        {globalRecords.leastMoves.player_name} - {globalRecords.leastMoves.winner} - {globalRecords.leastMoves.move_count} moves
+                      </span>
+                    ) : (
+                      <span className="record-empty">No wins yet</span>
+                    )}
+                  </div>
+                  <div className="record-item">
+                    <span className="record-label">🎯 Most Moves Win:</span>
+                    {globalRecords.mostMoves ? (
+                      <span className="record-value">
+                        {globalRecords.mostMoves.player_name} - {globalRecords.mostMoves.winner} - {globalRecords.mostMoves.move_count} moves
+                      </span>
+                    ) : (
+                      <span className="record-empty">No wins yet</span>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
