@@ -1,46 +1,122 @@
-# Getting Started with Create React App
+# 3D Tic-Tac-Toe
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A three-dimensional twist on the classic Tic-Tac-Toe game built with React, TypeScript, and Three.js.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- **3D Game Board**: Play on a 3x3x3 cube with 27 positions
+- **Keyboard Controls**: Use letter keys (a-z) and 0 to place pieces
+- **Visual Position Guide**: Each empty cell shows its keyboard shortcut
+- **Position Key**: Reference guide in the lower-left corner
+- **Score Tracking**: Persistent score tracking between sessions
+- **Game History**: View recent game results
+- **Interactive 3D View**: Rotate the board with mouse/touch controls
+- **Smart AI Opponent**: Play against a computer opponent
 
-### `npm start`
+## How to Play
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Keyboard Controls
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Place your piece (O) by pressing the corresponding letter key:
 
-### `npm test`
+**Top Layer:**
+```
+a b c
+d e f  
+g h i
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+**Middle Layer:**
+```
+j k l
+m 0 n
+o p q
+```
 
-### `npm run build`
+**Bottom Layer:**
+```
+r s t
+u v w
+x y z
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+The center position of the middle layer is accessed with the '0' key.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Winning
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Get three in a row in any direction:
+- Horizontal (within a layer)
+- Vertical (within a layer)
+- Depth (across layers)
+- Diagonal (within a layer or across layers)
 
-### `npm run eject`
+## Getting Started
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Prerequisites
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- Node.js (v14 or higher)
+- npm or yarn
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Installation
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+1. Clone the repository:
+```bash
+git clone [repository-url]
+cd 3d-react-tac-toe
+```
 
-## Learn More
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+3. Start the development server:
+```bash
+npm start
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+4. Open [http://localhost:3000](http://localhost:3000) to play
+
+### Building for Production
+
+```bash
+npm run build
+```
+
+## Technologies Used
+
+- **React** - UI framework
+- **TypeScript** - Type-safe JavaScript
+- **Three.js** - 3D graphics
+- **React Three Fiber** - React renderer for Three.js
+- **React Three Drei** - Helper components for React Three Fiber
+
+## Game Controls
+
+- **Letter Keys (a-z, 0)**: Place your piece at the corresponding position
+- **Mouse Drag**: Rotate the 3D board
+- **Mouse Wheel**: Zoom in/out
+
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── Board3D.tsx      # 3D game board component
+│   ├── GameInfo.tsx     # Game status and score display
+│   └── PositionKey.tsx  # Keyboard reference guide
+├── types/
+│   └── game.ts         # TypeScript type definitions
+├── utils/
+│   └── gameLogic.ts    # Game logic and AI
+├── App.tsx             # Main application component
+└── App.css             # Application styles
+```
+
+## Contributing
+
+Feel free to submit issues and enhancement requests!
+
+## License
+
+This project is open source and available under the MIT License.
