@@ -11,7 +11,9 @@ A three-dimensional twist on the classic Tic-Tac-Toe game built with React, Type
 - **Visual Position Guide**: Each empty cell shows its keyboard shortcut
 - **Position Key**: Reference guide in the lower-left corner
 - **Score Tracking**: Persistent score tracking between sessions
-- **Game History**: View recent game results
+- **Game History**: View recent game results with move counts
+- **Move Records**: Track your fastest and longest winning games
+- **Global Leaderboard**: Compete with players worldwide (demo mode included)
 - **Interactive 3D View**: Rotate the board with mouse/touch controls
 - **Smart AI Opponent**: Play against a computer opponent
 
@@ -114,6 +116,23 @@ src/
 ├── App.tsx             # Main application component
 └── App.css             # Application styles
 ```
+
+## Global Leaderboard
+
+The game includes a global leaderboard feature that works in demo mode by default. Players can:
+- Submit their scores with a chosen player name
+- View the top 10 players worldwide
+- See fastest wins (fewest moves)
+
+### Setting Up Your Own Leaderboard
+
+To create your own private leaderboard:
+
+1. Create a free account at [Supabase](https://supabase.com)
+2. Create a new project
+3. Run the SQL from `supabase-setup.sql` in your project's SQL editor
+4. Copy `.env.example` to `.env.local`
+5. Add your Supabase URL and anon key from the project settings
 
 ## Contributing
 

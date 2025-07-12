@@ -160,6 +160,20 @@ function App() {
             gameHistory={gameHistory}
             onNewGame={handleNewGame}
           />
+          {/* Calculate player stats for global scoreboard */}
+          <GlobalScoreboard
+            localWins={score.O}
+            leastMovesWin={
+              gameHistory
+                .filter(g => g.winner === 'O')
+                .reduce((min, g) => (!min || g.moveCount < min) ? g.moveCount : min, null as number | null)
+            }
+            mostMovesWin={
+              gameHistory
+                .filter(g => g.winner === 'O')
+                .reduce((max, g) => (!max || g.moveCount > max) ? g.moveCount : max, null as number | null)
+            }
+          />
         </div>
       </div>
       <PositionKey board={gameState.board} winningLine={gameState.winningLine} />

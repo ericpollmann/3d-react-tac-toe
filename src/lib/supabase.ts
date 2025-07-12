@@ -1,15 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
-// These are public keys, safe to expose in frontend code
-const supabaseUrl = 'https://your-project.supabase.co';
-const supabaseAnonKey = 'your-anon-key';
+// Get Supabase configuration from environment variables or use demo instance
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://dddqnobepfdtmsefqscb.supabase.co';
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRkZHFub2JlcGZkdG1zZWZxc2NiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY1NDEzNDYsImV4cCI6MjA1MjExNzM0Nn0.8Y_AehKbE0dVpGIMS7CP8ogWrTcMlFR0vwJC0HKDsAY';
 
-// For the demo, we'll use a public test instance
-// In production, you would create your own Supabase project
-export const supabase = createClient(
-  'https://xwqyktjhqrpbwjxqcgvg.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3cXlrdGpocXJwYndqeHFjZ3ZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY1MzgwNjEsImV4cCI6MjA1MjExNDA2MX0.ZKZCWx-wJQ9cE7qyGvQMPqU7TfUk9fWb0xwDOHplrQo'
-);
+// Create Supabase client
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Check if using demo instance
+export const isDemoMode = supabaseUrl.includes('dddqnobepfdtmsefqscb');
 
 export interface GlobalScore {
   id?: string;
@@ -23,72 +22,90 @@ export interface GlobalScore {
 
 // Initialize the scores table if it doesn't exist
 export async function initializeDatabase() {
-  // The table should be created via Supabase dashboard, but we can check if it exists
-  const { data, error } = await supabase
-    .from('global_scores')
-    .select('*')
-    .limit(1);
+  try {
+    // Try to fetch from table to check if it exists
+    const { error } = await supabase
+      .from('global_scores')
+      .select('*')
+      .limit(1);
     
-  if (error && error.code === '42P01') {
-    console.log('Table does not exist. Please create it in Supabase dashboard.');
+    if (error) {
+      console.warn('Global scoreboard not available:', error.message);
+      return false;
+    }
+    
+    return true;
+  } catch (err) {
+    console.warn('Global scoreboard not available');
+    return false;
   }
 }
 
 export async function getTopScores(limit: number = 10) {
-  const { data, error } = await supabase
-    .from('global_scores')
-    .select('*')
-    .order('wins', { ascending: false })
-    .limit(limit);
+  try {
+    const { data, error } = await supabase
+      .from('global_scores')
+      .select('*')
+      .order('wins', { ascending: false })
+      .limit(limit);
     
-  if (error) {
-    console.error('Error fetching scores:', error);
+    if (error) {
+      console.error('Error fetching scores:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (err) {
+    console.error('Error fetching scores:', err);
     return [];
   }
-  
-  return data || [];
 }
 
 export async function submitScore(playerName: string, wins: number, leastMoves: number | null, mostMoves: number | null) {
-  // Check if player already exists
-  const { data: existing } = await supabase
-    .from('global_scores')
-    .select('*')
-    .eq('player_name', playerName)
-    .single();
+  try {
+    // Check if player already exists
+    const { data: existing } = await supabase
+      .from('global_scores')
+      .select('*')
+      .eq('player_name', playerName)
+      .single();
     
-  if (existing) {
-    // Update existing record
-    const { error } = await supabase
-      .from('global_scores')
-      .update({
-        wins,
-        least_moves_win: leastMoves,
-        most_moves_win: mostMoves,
-        updated_at: new Date().toISOString()
-      })
-      .eq('player_name', playerName);
-      
-    if (error) {
-      console.error('Error updating score:', error);
-      return false;
+    if (existing) {
+      // Update existing record
+      const { error } = await supabase
+        .from('global_scores')
+        .update({
+          wins,
+          least_moves_win: leastMoves,
+          most_moves_win: mostMoves,
+          updated_at: new Date().toISOString()
+        })
+        .eq('player_name', playerName);
+        
+      if (error) {
+        console.error('Error updating score:', error);
+        return false;
+      }
+    } else {
+      // Create new record
+      const { error } = await supabase
+        .from('global_scores')
+        .insert({
+          player_name: playerName,
+          wins,
+          least_moves_win: leastMoves,
+          most_moves_win: mostMoves
+        });
+        
+      if (error) {
+        console.error('Error creating score:', error);
+        return false;
+      }
     }
-  } else {
-    // Create new record
-    const { error } = await supabase
-      .from('global_scores')
-      .insert({
-        player_name: playerName,
-        wins,
-        least_moves_win: leastMoves,
-        most_moves_win: mostMoves
-      });
-      
-    if (error) {
-      console.error('Error creating score:', error);
-      return false;
-    }
+    
+    return true;
+  } catch (err) {
+    console.error('Error submitting score:', err);
+    return false;
   }
-  
-  return true;
 }
