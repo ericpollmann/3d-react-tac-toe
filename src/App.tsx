@@ -3,13 +3,13 @@ import './App.css';
 import Board3D from './components/Board3D';
 import GameInfo from './components/GameInfo';
 import PositionKey from './components/PositionKey';
-import { GameState, GameScore, Position } from './types/game';
+import { GameState, GameScore, Position, GameHistoryItem } from './types/game';
 import { initializeGameState, makeMove } from './utils/gameLogic';
 
 function App() {
   const [gameState, setGameState] = useState<GameState>(initializeGameState());
   const [score, setScore] = useState<GameScore>({ X: 0, O: 0, draws: 0 });
-  const [gameHistory, setGameHistory] = useState<Array<{ winner: 'X' | 'O' | 'draw' | null; timestamp: Date }>>([]);
+  const [gameHistory, setGameHistory] = useState<GameHistoryItem[]>([]);
 
   useEffect(() => {
     const savedScore = localStorage.getItem('ticTacToeScore');
@@ -54,7 +54,7 @@ function App() {
 
       setGameHistory(prevHistory => [
         ...prevHistory,
-        { winner: gameResult, timestamp: new Date() }
+        { winner: gameResult, timestamp: new Date(), moveCount: newGameState.moveCount }
       ]);
     }
   };

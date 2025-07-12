@@ -26,3 +26,7 @@
 
 > no no middle board jkl / m0n / opq, bottom row rst / uvw / xyz like I said
 
+> when a player wins, the winning pieces in the key should also turn yellow and spin
+
+> For it to be clear that the player 'O' is spinning in the graph key on the bottom left, could you slightly make the 'O' a little more oval
+

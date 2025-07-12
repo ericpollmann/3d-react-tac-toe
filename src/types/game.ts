@@ -13,6 +13,7 @@ export interface GameState {
   winner: Player | null;
   isDraw: boolean;
   winningLine: Position[] | null;
+  moveCount: number;
 }
 
 export interface GameScore {
@@ -21,9 +22,12 @@ export interface GameScore {
   draws: number;
 }
 
+export interface GameHistoryItem {
+  winner: Player | 'draw' | null;
+  timestamp: Date;
+  moveCount: number;
+}
+
 export interface GameHistory {
-  games: Array<{
-    winner: Player | 'draw' | null;
-    timestamp: Date;
-  }>;
+  games: GameHistoryItem[];
 }

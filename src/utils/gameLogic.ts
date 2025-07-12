@@ -14,6 +14,7 @@ export const initializeGameState = (): GameState => ({
   winner: null,
   isDraw: false,
   winningLine: null,
+  moveCount: 0,
 });
 
 const checkLine = (board: CellValue[][][], positions: Position[]): Player | null => {
@@ -150,7 +151,7 @@ export const makeMove = (
   gameState: GameState,
   position: Position
 ): GameState => {
-  const { board, currentPlayer } = gameState;
+  const { board, currentPlayer, moveCount } = gameState;
   const { layer, row, col } = position;
   
   // Check if cell is already occupied
@@ -182,5 +183,6 @@ export const makeMove = (
     winner,
     isDraw,
     winningLine,
+    moveCount: moveCount + 1,
   };
 };
