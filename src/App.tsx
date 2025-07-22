@@ -11,7 +11,6 @@ function App() {
   const [gameState, setGameState] = useState<GameState>(initializeGameState());
   const [score, setScore] = useState<GameScore>({ X: 0, O: 0, draws: 0 });
   const [gameHistory, setGameHistory] = useState<GameHistoryItem[]>([]);
-  const [showDrawNote, setShowDrawNote] = useState(true);
   const [playerName, setPlayerName] = useState<string>('');
   const [showNamePrompt, setShowNamePrompt] = useState(false);
   const [hasShownNamePrompt, setHasShownNamePrompt] = useState(false);
@@ -184,12 +183,6 @@ function App() {
               <button type="submit">Start Playing</button>
             </form>
           </div>
-        </div>
-      )}
-      {showDrawNote && (
-        <div className="draw-note">
-          <p>Note: Draws are theoretically possible in 3D Tic-Tac-Toe but extremely rare due to the many winning lines available.</p>
-          <button className="close-note" onClick={() => setShowDrawNote(false)}>×</button>
         </div>
       )}
       <header className="App-header">

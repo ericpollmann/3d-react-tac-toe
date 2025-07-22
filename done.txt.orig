@@ -1,0 +1,32 @@
+> Make a 3-d tic-tac-toe game in react, I want it to look quite fancy with a 3-d raised grid, it'd be super cool if the board could rotate in 3-d space and pieces were also 3-d.  The game should keep track of whos turn it is, winner, and score over the past 5 games.
+
+ -> Game works and has and automated opponent, it's hard to see
+
+> the board is too dark, can you make theh background light grey and the board be somewhat translucent so I can see through it to a limited degree  Also it's weird that the X is standing up
+
+> the board is not transparent enough, it's still pretty opaque
+
+> the board still appears opaque, are there other surfaces on each square of the board that could be causing it to be hard to see between layers?  Also, when the game ends it's nice that the pieces spin around but there should be a button to 'play again', and the score "player (o): 1 win       computer (x): 0 wins" in the header near the game title, maybe lower right corner of the header?
+
+ -> Game is much easier to navigate and see, has endgame
+
+> Create a git repo if one doesn't already exist, commit the code so far
+
+> put a subtle letter for each square and 0 for the center center like abc def ghi for the top board, etc.
+
+> It's hard to see the letter on the board, maybe make a key in teh lower-left corner or find some way to make the letter opaque while the board tiles remain translucent
+
+> When I press the letter in the key that places my piece in that space
+
+> The board rendering is reversed, it's showing abc def ghi as the bottom row when it should be the top row, can we reverse that axis in the rendering?  Also when a piece is placed on the board, make the corresponding space in the key change to the piece also
+
+> Make the rendering of the piece in the key be graphical like the one on the board, a larger red x for X and a teal O  Also make clicking on the 3-d board (either on the tile or letters of the board) do nothing, it should only rotate the board.
+
+> oh no the letters should be abc def ghi | jkl m0n opq | rst uvw xyz  otherwise there were two a's on the board
+
+> no no middle board jkl / m0n / opq, bottom row rst / uvw / xyz like I said
+
+> commit the pending changes 
+
+> Update the readme for this app and commit the change
+

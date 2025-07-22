@@ -96,10 +96,6 @@ const GameInfo: React.FC<GameInfoProps> = ({
             <span className="player-label player-o">Player O</span>
             <span className="score-value">{score.O}</span>
           </div>
-          <div className="score-item">
-            <span className="player-label">Draws</span>
-            <span className="score-value">{score.draws}</span>
-          </div>
         </div>
       </div>
 
