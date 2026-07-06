@@ -1,6 +1,6 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Box, Sphere, Torus, Plane, Text } from '@react-three/drei';
+import { OrbitControls, Box, Torus, Plane, Text } from '@react-three/drei';
 import * as THREE from 'three';
 import { CellValue, Position } from '../types/game';
 
